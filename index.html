@@ -267,9 +267,7 @@
           throw new Error(data.error || "Request failed");
         }
 
-        productNameEl.textContent = data.product_name
-          ? `Detected product: ${data.product_name}`
-          : "";
+        productNameEl.textContent = "";
 
         output.textContent = data.result || "No result returned.";
         resultBox.classList.remove("hidden");
