@@ -1,4 +1,4 @@
-# Product Price and description finder from Image
+# AI resale listing assistant
 
 This project uses Google's Gen AI SDK to identify a product from an image and return the most likely product name, brand, variant, and size.
 
