@@ -139,7 +139,7 @@
       try {
         const imageBase64 = await toBase64(file);
 
-        const response = await fetch("/api/app", {
+        const response = await fetch("/api/index", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
