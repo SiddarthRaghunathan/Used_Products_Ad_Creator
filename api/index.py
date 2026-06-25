@@ -16,6 +16,14 @@ def extract_text(response):
 
 
 class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps({
+            "message": "API is running. Use POST with imageBase64 and mimeType."
+        }).encode("utf-8"))
+
     def do_POST(self):
         if not client:
             self.send_response(500)
