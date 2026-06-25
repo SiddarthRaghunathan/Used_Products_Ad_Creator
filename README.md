@@ -1,2 +1,39 @@
-# Used_Products_Ad_Creator
-Identify the likely product from image using gemma image understanding and give product pricing and description
+# Product Price and description finder from Image
+
+This project uses Google's Gen AI SDK to identify a product from an image and return the most likely product name, brand, variant, and size.
+
+## What it does
+- Uploads an image to the model
+- Sends a prompt asking for the product identity
+- Returns structured text output
+- Handles uncertainity with a confidence metric
+
+## Example use case
+Useful for:
+- resale listing automation
+- ad creation workflows
+- image-based product search
+
+## Example output
+Product Name: Dream Coat Supernatural Spray
+Brand: Color Wow
+Variant: Dream Coat
+Size: 200 ml
+
+## Files
+- `product_lookup.py` — main logic
+- `sample.jpg` — example input image
+- `.env.example` — environment variable template
+
+## Setup
+```bash
+pip install -r requirements.txt
+export GEMINI_API_KEY=your_key_here
+python product_lookup.py
+```
+
+## Limitations
+- Product identity may be wrong when packaging is unclear
+- Newer product (bought in last 12 months) may not reflect accurate pricing
+- OCR quality depends on image clarity
+- Output is probabilistic, not guaranteed
