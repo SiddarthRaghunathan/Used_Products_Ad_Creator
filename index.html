@@ -31,8 +31,13 @@
       color: #4b5563;
       line-height: 1.5;
     }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
     input[type="file"] {
-      margin: 16px 0;
+      margin: 12px 0 16px;
       display: block;
     }
     button {
@@ -69,6 +74,11 @@
       border-radius: 12px;
       display: block;
     }
+    .productName {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #111827;
+    }
     pre {
       white-space: pre-wrap;
       word-break: break-word;
@@ -92,6 +102,7 @@
       <h1>Vinted Product Price Estimator</h1>
       <p>Upload a product image to identify the item and estimate a likely retail price range in euros.</p>
 
+      <label for="imageFile">Choose a product image</label>
       <input id="imageFile" type="file" accept="image/*" />
       <button id="runBtn">Analyze image</button>
       <div id="status" class="status"></div>
@@ -101,6 +112,7 @@
           <img id="preview" alt="Uploaded product image preview" />
         </div>
         <div class="panel">
+          <div id="productName" class="productName"></div>
           <pre id="output"></pre>
         </div>
       </div>
@@ -114,6 +126,9 @@
     const resultBox = document.getElementById("resultBox");
     const preview = document.getElementById("preview");
     const output = document.getElementById("output");
+    const productNameEl = document.getElementById("productName");
+
+    let previewUrl = null;
 
     function toBase64(file) {
       return new Promise((resolve, reject) => {
@@ -131,10 +146,17 @@
         return;
       }
 
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      previewUrl = URL.createObjectURL(file);
+      preview.src = previewUrl;
+
       runBtn.disabled = true;
       statusEl.textContent = "Analyzing image...";
       resultBox.classList.add("hidden");
-      preview.src = URL.createObjectURL(file);
+      output.textContent = "";
+      productNameEl.textContent = "";
 
       try {
         const imageBase64 = await toBase64(file);
@@ -150,13 +172,20 @@
           })
         });
 
-        const data = await response.json();
+        const rawText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch {
+          throw new Error(rawText || "Invalid server response");
+        }
 
         if (!response.ok) {
           throw new Error(data.error || "Request failed");
         }
 
-        output.textContent = data.result;
+        productNameEl.textContent = data.product_name ? `Detected product: ${data.product_name}` : "";
+        output.textContent = data.result || "No result returned.";
         resultBox.classList.remove("hidden");
         statusEl.textContent = "Done.";
       } catch (error) {
