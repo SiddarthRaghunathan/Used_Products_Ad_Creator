@@ -3,10 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product Price Estimator Demo</title>
+  <title>Vinted Product Price Estimator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+    p {
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    input[type="file"] {
+      margin: 16px 0;
+      display: block;
+    }
+    button {
+      background: #0f766e;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 14px;
+      color: #374151;
+    }
+    .result {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+    .panel {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .panel img {
+      width: 100%;
+      border-radius: 12px;
+      display: block;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .hidden {
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .result {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Product Price Estimator Demo</h1>
-  <p>Live demo coming soon.</p>
+  <main class="container">
+    <div class="card">
+      <h1>Vinted Product Price Estimator</h1>
+      <p>Upload a product image to identify the item and estimate a likely retail price range in euros.</p>
+
+      <input id="imageFile" type="file" accept="image/*" />
+      <button id="runBtn">Analyze image</button>
+      <div id="status" class="status"></div>
+
+      <div id="resultBox" class="result hidden">
+        <div class="panel">
+          <img id="preview" alt="Uploaded product image preview" />
+        </div>
+        <div class="panel">
+          <pre id="output"></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const imageFile = document.getElementById("imageFile");
+    const runBtn = document.getElementById("runBtn");
+    const statusEl = document.getElementById("status");
+    const resultBox = document.getElementById("resultBox");
+    const preview = document.getElementById("preview");
+    const output = document.getElementById("output");
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    runBtn.addEventListener("click", async () => {
+      const file = imageFile.files[0];
+      if (!file) {
+        statusEl.textContent = "Please choose an image first.";
+        return;
+      }
+
+      runBtn.disabled = true;
+      statusEl.textContent = "Analyzing image...";
+      resultBox.classList.add("hidden");
+      preview.src = URL.createObjectURL(file);
+
+      try {
+        const imageBase64 = await toBase64(file);
+
+        const response = await fetch("/api/estimate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            imageBase64,
+            mimeType: file.type || "image/jpeg"
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Request failed");
+        }
+
+        output.textContent = data.result;
+        resultBox.classList.remove("hidden");
+        statusEl.textContent = "Done.";
+      } catch (error) {
+        statusEl.textContent = "Error: " + error.message;
+      } finally {
+        runBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
