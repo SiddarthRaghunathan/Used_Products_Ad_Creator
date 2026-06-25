@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
+import time
 from google import genai
 
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -13,6 +14,18 @@ def extract_text(response):
         return response.text.strip()
     except Exception:
         return "unknown"
+
+
+def call_with_retry(fn, max_attempts=5, delay=2):
+    last_error = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fn()
+        except Exception as e:
+            last_error = e
+            if attempt < max_attempts:
+                time.sleep(delay)
+    raise last_error
 
 
 class handler(BaseHTTPRequestHandler):
@@ -59,7 +72,7 @@ class handler(BaseHTTPRequestHandler):
             if extra_prompt.strip():
                 identify_prompt += f" {extra_prompt.strip()}"
 
-            identify_response = client.models.generate_content(
+            identify_response = call_with_retry(lambda: client.models.generate_content(
                 model=MODEL_NAME,
                 contents=[
                     {
@@ -71,7 +84,7 @@ class handler(BaseHTTPRequestHandler):
                     "\n\n",
                     identify_prompt
                 ]
-            )
+            ))
             product_name = extract_text(identify_response)
 
             price_prompt = f"""
@@ -85,10 +98,10 @@ Description of Product: ...
 Confidence: low/medium/high and as percentage
 """
 
-            price_response = client.models.generate_content(
+            price_response = call_with_retry(lambda: client.models.generate_content(
                 model=MODEL_NAME,
                 contents=price_prompt
-            )
+            ))
             answer = extract_text(price_response)
 
             self.send_response(200)
