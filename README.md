@@ -2,6 +2,8 @@
 
 This project uses Google's Gen AI SDK to identify a product from an image and return the most likely product name, brand, variant, and size.
 
+**Live Demo: https://used-products-ad-creator-72bts3zqk-sidprojects.vercel.app/**
+
 ## What it does
 - Uploads an image to the model
 - Sends a prompt asking for the product identity
