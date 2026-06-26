@@ -16,17 +16,6 @@ Useful for:
 - ad creation workflows
 - image-based product search
 
-## Example output
-Product Name: Dream Coat Supernatural Spray
-Brand: Color Wow
-Variant: Dream Coat
-Size: 200 ml
-
-## Files
-- `product_lookup.py` — main logic
-- `sample.jpg` — example input image
-- `.env.example` — environment variable template
-
 ## Setup
 ```bash
 pip install -r requirements.txt
